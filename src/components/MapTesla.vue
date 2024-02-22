@@ -40,7 +40,7 @@ export default {
     Icon.Default.mergeOptions({
       iconRetinaUrl: require('leaflet/dist/images/marker-2x.svg'),
       iconUrl: require('leaflet/dist/images/marker-2x.svg'),
-      shadowUrl: require('leaflet/dist/images/marker.svg'),
+      shadowUrl: require('leaflet/dist/images/marker-2x.svg'),
     });
     // Créer une carte Leaflet et l'ajouter à l'élément avec l'id 'map'
     this.map = L.map('map-tesla').setView([45.780835, 4.8720641], 13);
