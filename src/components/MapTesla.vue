@@ -14,11 +14,8 @@ async function getStations(){
   let stations = [];
 
   try{
-    const response = await fetch("https://api.openchargemap.io/v3/poi?CountryIDs=80", {
-      method: "GET",
-      headers: {
-        "x-api-key": API_KEY 
-      }
+    const response = await fetch("https://api.openchargemap.io/v3/poi?maxresults=1000&countrycode=FR&key="+API_KEY, {
+      method: "GET"
     });
 
     if(!response.ok){
@@ -36,15 +33,14 @@ async function getStations(){
 }
 
 
-
 export default {
   name: "map-tesla",
   async mounted() {
     delete Icon.Default.prototype._getIconUrl;
     Icon.Default.mergeOptions({
-      iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-      iconUrl: require('leaflet/dist/images/marker-icon.png'),
-      shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+      iconRetinaUrl: require('leaflet/dist/images/marker-2x.svg'),
+      iconUrl: require('leaflet/dist/images/marker-2x.svg'),
+      shadowUrl: require('leaflet/dist/images/marker.svg'),
     });
     // Créer une carte Leaflet et l'ajouter à l'élément avec l'id 'map'
     this.map = L.map('map-tesla').setView([45.780835, 4.8720641], 13);
