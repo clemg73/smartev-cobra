@@ -5,7 +5,6 @@
 <script>
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Icon } from 'leaflet';
 
 const API_KEY = "7d563b7b-c646-4bfc-bd61-e260939a27bf";
 
@@ -32,18 +31,16 @@ async function getStations(){
 
 }
 
+let markerSVG = "../assets/marker.svg" 
 
 export default {
   name: "map-tesla",
   async mounted() {
-    delete Icon.Default.prototype._getIconUrl;
-    Icon.Default.mergeOptions({
-      iconRetinaUrl: require('../assets/marker-2x.svg'),
-      iconUrl: require('../assets/marker-2x.svg'),
-      shadowUrl: require('../assets/marker-2x.svg'),
-    });
+    L.Icon.Default.imagePath = '../assets/';
+    L.Icon.Default.prototype.options.iconUrl = markerSVG;
+    
     // Créer une carte Leaflet et l'ajouter à l'élément avec l'id 'map'
-    this.map = L.map('map-tesla').setView([45.780835, 4.8720641], 13);
+    this.map = L.map('map-tesla').setView([45.780835, 4.8720641], 6);
 
     // Ajouter une couche de tuiles (par exemple OpenStreetMap) à la carte
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
