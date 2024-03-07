@@ -1,16 +1,19 @@
 <template>
   <l-map ref="map" id="map" :zoom="zoom" :center="center">
     <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
-    <l-marker v-for="(marker, index) in markers" @click="$emit('stationInfo', marker)" :key="index" :lat-lng="[marker.AddressInfo.Latitude, marker.AddressInfo.Longitude]" >
-    </l-marker>
   </l-map>
 </template>
 
 <script>
-import {LMap, LTileLayer, LMarker} from 'vue3-leaflet';
+import {LMap, LTileLayer} from 'vue3-leaflet';
+import L from "leaflet"
+import "leaflet.markercluster"
+import "leaflet.beautifymarker"
+
+
 
 const API_KEY = "7d563b7b-c646-4bfc-bd61-e260939a27bf";
-const zoom = 15;
+const zoom = 6;
 
 //function to get all charging stations of Tesla 
 async function getStations(){
@@ -39,7 +42,6 @@ export default {
   components: {
     LMap,
     LTileLayer,
-    LMarker  
   },
   data () {
     return {
@@ -53,22 +55,40 @@ export default {
     };
   },
   async mounted(){
+    let options = {
+      icon: 'leaf',
+      iconShape: 'circle-dot'
+    }
     await this.callGetStations();
+
+    let markercluster = new L.MarkerClusterGroup({
+            spiderfyOnMaxZoom: false,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: false
+          })
+
+    await this.markers.forEach(marker => {
+      if(marker.AddressInfo.Latitude != null && marker.AddressInfo.Longitude != null){
+        let coord = [marker.AddressInfo.Latitude, marker.AddressInfo.Longitude]
+        markercluster.addLayer(L.marker(coord, {icon: L.BeautifyIcon.icon(options)}))
+      }
+    })
+    
+    this.$refs.map.addLayer(markercluster)
+
+
   },
   methods: {
     async callGetStations(){
       try{
-        const stations = getStations()
+        let stations = await getStations()  
         this.markers = stations
+        console.log(stations);
       }
       catch(err){
         console.error("Problème pour récupérer les données : " + err)
       }
     },
-
-    checkBounds(bounds){
-      console.log(bounds);
-    }
   }
 }
 
