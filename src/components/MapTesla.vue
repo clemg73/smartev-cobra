@@ -1,5 +1,5 @@
 <template>
-  <l-map ref="map" id="map" :zoom="zoom" :center="center">
+  <l-map ref="map" id="map" :zoom="zoom" :center="center" @zoom="onMapLoaded">
     <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
   </l-map>
 </template>
@@ -8,9 +8,6 @@
 import {LMap, LTileLayer} from 'vue3-leaflet';
 import L from "leaflet"
 import "leaflet.markercluster"
-import "leaflet.beautifymarker"
-
-
 
 const API_KEY = "7d563b7b-c646-4bfc-bd61-e260939a27bf";
 const zoom = 6;
@@ -55,28 +52,7 @@ export default {
     };
   },
   async mounted(){
-    let options = {
-      icon: 'leaf',
-      iconShape: 'circle-dot'
-    }
     await this.callGetStations();
-
-    let markercluster = new L.MarkerClusterGroup({
-            spiderfyOnMaxZoom: false,
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: false
-          })
-
-    await this.markers.forEach(marker => {
-      if(marker.AddressInfo.Latitude != null && marker.AddressInfo.Longitude != null){
-        let coord = [marker.AddressInfo.Latitude, marker.AddressInfo.Longitude]
-        markercluster.addLayer(L.marker(coord, {icon: L.BeautifyIcon.icon(options)}))
-      }
-    })
-    
-    this.$refs.map.addLayer(markercluster)
-
-
   },
   methods: {
     async callGetStations(){
@@ -89,6 +65,35 @@ export default {
         console.error("Problème pour récupérer les données : " + err)
       }
     },
+
+    onMapLoaded(e){
+      e.target._zoomAnimated = false
+      console.log(e);
+      let myIcon = L.icon({
+        iconUrl: require('../assets/marker.svg'),
+        iconSize: [38, 95],
+        iconAnchor: [22, 94],
+        popupAnchor: [-3, -76],
+        shadowUrl: null,
+        shadowSize: null,
+        shadowAnchor: null
+      });
+
+        let markercluster = new L.MarkerClusterGroup({
+              spiderfyOnMaxZoom: false,
+              showCoverageOnHover: false,
+              zoomToBoundsOnClick: false
+            })
+
+      this.markers.forEach(marker => {
+        if(marker.AddressInfo.Latitude != null && marker.AddressInfo.Longitude != null){
+          let coord = [marker.AddressInfo.Latitude, marker.AddressInfo.Longitude]
+          markercluster.addLayer(L.marker(coord, {icon: myIcon}))
+        }
+      })
+    
+      this.$refs.map.addLayer(markercluster)
+    }
   }
 }
 
