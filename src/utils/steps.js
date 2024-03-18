@@ -25,8 +25,8 @@ export function computePointWithKm(polyline, km){
             
             // Interpolation linéaire entre les deux points pour obtenir le point à 50 kilomètres
             const targetPoint = {
-              latitude: start[0] + (end[0] - start[0]) * ratio,
-              longitude: start[1] + (end[1] - start[1]) * ratio
+              latitude: start[1] + (end[1] - start[1]) * ratio,
+              longitude: start[0] + (end[0] - start[0]) * ratio
             };
             
             return targetPoint;

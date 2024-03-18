@@ -24,7 +24,7 @@
         </ul>
     </div>
     <button @click="itineraryFirst()">Search</button>
-    <button @click="computePointWithKmClick(this.itinerary.routes[0].geometry.coordinates, 50)">Calc max</button>
+    <button @click="computePointWithKmClick(200)">Calc max</button>
     <p>{{ itinerary }}</p>
     <p>{{ max }}</p>
 
@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import * as geolib from 'geolib';
 import {
     computePointWithKm
 } from '@/utils/steps'; // Assurez-vous de spécifier le bon chemin
@@ -99,24 +100,47 @@ export default {
         });
     },
     methods: {
-        async computePointWithKmClick(polyline, km) {
-            //let points = [{"latitude":this.addressStart.center[0],"longitude":this.addressStart.center[1]}]
+        async computePointWithKmClick(km) {
+            let points = [{"latitude":this.addressStart.center[1],"longitude":this.addressStart.center[0]}]
 
-            this.max = computePointWithKm(polyline, km)
-            /*let nearPoints = await this.getNearPoints(this.max["latitude"], this.max["longitude"])
-            console.log(nearPoints)
-
-            min = km * 1000
-            temp_nextPoint = null
-            nearPoints.forEach(async element => {
-                let test = await this.computeItinerary(`${this.addressStart.center[0]},${this.addressStart.center[1]}`, `${element.AddressInfo.Latitude},${element.AddressInfo.Longitude}`)
-                console.log(test)
-                if(test.routes[0].distance < min )
-                {
-                    min = test.routes[0].distance
-                    temp_nextPoint = element
+            let min = 0
+            let temp_nextPoint = null
+            let distanceFinal = null
+            let i = 0
+            while (distanceFinal/1000 > km || distanceFinal == null){
+                const startPoint = `${points[i]["longitude"]},${points[i]["latitude"]}`;
+                const endPoint = `${this.addressEnd.center[0]},${this.addressEnd.center[1]}`;
+                let iti = await this.computeItinerary(startPoint, endPoint)
+                console.log(iti)
+                this.max = computePointWithKm(iti.routes[0].geometry.coordinates, km)
+                console.log(this.max)
+                let nearPoints = await this.getNearPoints(this.max["latitude"], this.max["longitude"])
+                console.log(nearPoints)
+    
+                min = km * 1000
+                temp_nextPoint = null
+                for (const element of nearPoints) {
+                    console.log(points[i]["latitude"]);
+                    let test = await this.computeItinerary(`${points[i]["longitude"]},${points[i]["latitude"]}`, `${element.AddressInfo.Longitude},${element.AddressInfo.Latitude}`);
+                    console.log(min);
+                    console.log(test.routes[0].distance);
+                    if (test.routes[0].distance < min) {
+                        min = test.routes[0].distance;
+                        temp_nextPoint = element;
+                    }
                 }
-            });*/
+
+                points.push({"borneId":temp_nextPoint.ID,"latitude":temp_nextPoint.AddressInfo.Latitude, "longitude": temp_nextPoint.AddressInfo.Longitude})
+                console.log(points)
+
+                distanceFinal = geolib.getDistance({ latitude: temp_nextPoint.AddressInfo.Latitude, longitude: temp_nextPoint.AddressInfo.Longitude },{ latitude: this.addressEnd.center[1], longitude: this.addressEnd.center[0] });
+                i++
+                console.log(distanceFinal)
+            }
+
+            points.push({"latitude":this.addressEnd.center[1],"longitude":this.addressEnd.center[0]})
+            console.log(points)
+
         },
         async itineraryFirst() {
             console.log(this.addressStart.place_name)
@@ -145,7 +169,7 @@ export default {
         },
         async getNearPoints(lat, long) {
             try {
-                const response = await fetch(`https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${long}&distance=200&distanceunit=km&maxresults=5&key=29674b4a-741f-4dd2-8b14-bba674d9cb13`, {
+                const response = await fetch(`https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${long}&distance=10&distanceunit=km&maxresults=5&key=29674b4a-741f-4dd2-8b14-bba674d9cb13`, {
                     method: "GET"
                 });
 
