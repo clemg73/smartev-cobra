@@ -23,15 +23,19 @@
             <li v-for="address in addressEndAutoCompletion" :key="address" @click="addressEnd=address; addressEndNoLoop=true; addressEndAutoCompletion=[]" class="place">{{ address.place_name }}</li>
         </ul>
     </div>
-    <button @click="computeItinerary()">Search</button>
+    <button @click="itineraryFirst()">Search</button>
+    <button @click="computePointWithKmClick(this.itinerary.routes[0].geometry.coordinates, 50)">Calc max</button>
     <p>{{ itinerary }}</p>
+    <p>{{ max }}</p>
 
 </div>
 </template>
 
-    
-    
 <script>
+import {
+    computePointWithKm
+} from '@/utils/steps'; // Assurez-vous de spécifier le bon chemin
+
 const access_token = "pk.eyJ1IjoiY2xlbWciLCJhIjoiY2xndHcxamU2MXdwZDNjbXRnM2RtM25rZyJ9.ajTLZlHD4s8h30zdqJ1tEg"
 
 async function autocomplete(address) {
@@ -55,8 +59,6 @@ async function autocomplete(address) {
 
 }
 
-
-
 export default {
 
     name: "itinerary-side",
@@ -68,7 +70,8 @@ export default {
             addressEnd: {},
             addressEndAutoCompletion: '',
             addressEndNoLoop: false,
-            itinerary: ""
+            itinerary: "",
+            max: {}
         };
     },
     mounted() {
@@ -96,34 +99,70 @@ export default {
         });
     },
     methods: {
-        async computeItinerary(){
+        async computePointWithKmClick(polyline, km) {
+            //let points = [{"latitude":this.addressStart.center[0],"longitude":this.addressStart.center[1]}]
+
+            this.max = computePointWithKm(polyline, km)
+            /*let nearPoints = await this.getNearPoints(this.max["latitude"], this.max["longitude"])
+            console.log(nearPoints)
+
+            min = km * 1000
+            temp_nextPoint = null
+            nearPoints.forEach(async element => {
+                let test = await this.computeItinerary(`${this.addressStart.center[0]},${this.addressStart.center[1]}`, `${element.AddressInfo.Latitude},${element.AddressInfo.Longitude}`)
+                console.log(test)
+                if(test.routes[0].distance < min )
+                {
+                    min = test.routes[0].distance
+                    temp_nextPoint = element
+                }
+            });*/
+        },
+        async itineraryFirst() {
             console.log(this.addressStart.place_name)
-            if(this.addressStart.place_name != undefined && this.addressEnd.place_name != undefined)
-            {
+            if (this.addressStart.place_name != undefined && this.addressEnd.place_name != undefined) {
                 const startPoint = `${this.addressStart.center[0]},${this.addressStart.center[1]}`;
                 const endPoint = `${this.addressEnd.center[0]},${this.addressEnd.center[1]}`;
-    
-                try {
-                    const response = await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${startPoint};${endPoint}?access_token=${access_token}`, {
-                        method: "GET"
-                    });
-    
-                    if (!response.ok) {
-                        throw new Error('Erreur lors de la récupération de l itinéraire.');
-                    }
-    
-                    this.itinerary = await response.json();
-                } catch (error) {
-                    console.error('Erreur lors de la récupération de l itineraire:', error);
-                    return [];
+
+                this.itinerary = await this.computeItinerary(startPoint, endPoint)
+            }
+        },
+        async computeItinerary(startPoint, endPoint) {
+            try {
+                const response = await fetch(`https://api.mapbox.com/directions/v5/mapbox/driving/${startPoint};${endPoint}?geometries=geojson&access_token=${access_token}`, {
+                    method: "GET"
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération de l itinéraire.');
                 }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur lors de la récupération de l itineraire:', error);
+                return [];
+            }
+        },
+        async getNearPoints(lat, long) {
+            try {
+                const response = await fetch(`https://api.openchargemap.io/v3/poi/?output=json&latitude=${lat}&longitude=${long}&distance=200&distanceunit=km&maxresults=5&key=29674b4a-741f-4dd2-8b14-bba674d9cb13`, {
+                    method: "GET"
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des points de recharge.');
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur lors de la récupération des point de recharge:', error);
+                return [];
             }
         }
     }
 };
 </script>
-    
-    
+
 <style>
 input[type=text] {
     width: 84%;
@@ -176,23 +215,26 @@ select {
     color: white;
     padding: 11px;
 }
-h4{
+
+h4 {
     color: white;
     font-size: 13px;
     margin-bottom: 10px;
     font-weight: 400;
 }
-button{
+
+button {
     background-color: rgb(0, 0, 0);
     border-radius: 5px;
     color: White;
     width: 90%;
     padding: 10px;
-    border:none;
+    border: none;
     margin-top: 20px;
     cursor: pointer;
 }
-button:hover{
+
+button:hover {
     background-color: rgb(71, 71, 71);
 }
 </style>
