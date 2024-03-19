@@ -15,15 +15,10 @@
 
     export default {
         name: 'MapTesla',
-        data () {
-            return {
-            markerPos: [51.505, -0.159],
-            };
-        },
         setup(props, context) {
             const map = ref(null);
             const mapContainer = ref(null);
-            const center = ref([51.505, -0.159])
+            const center = ref([46.821445, 2.454638])
             const zoom = ref(6)
             let markers = []
 
@@ -67,7 +62,11 @@
             onMounted(async () => {
                 await callGetStations();
                 map.value = L.map(mapContainer.value).setView(center.value, zoom.value);
-        
+                
+                console.log(map.value);
+
+                
+
                 L.tileLayer(url, {
                     attribution: attribution,
                     maxZoom: 18,
@@ -76,13 +75,13 @@
                 const markersGroup = L.markerClusterGroup({
                     spiderfyOnMaxZoom: false,
                     showCoverageOnHover: false,
-                    zoomToBoundsOnClick: false
+                    zoomToBoundsOnClick: true
                 });
 
                 markers.forEach(markerObject => {
                     const Latitude = markerObject.AddressInfo.Latitude;
                     const Longitude = markerObject.AddressInfo.Longitude;
-
+                    
                     const marker = L.marker([Latitude, Longitude]);
                     marker.bindPopup("Lat : " + Latitude +", Long : " + Longitude);
                     markersGroup.addLayer(marker);
@@ -94,6 +93,8 @@
                 });
         
                 map.value.addLayer(markersGroup);
+
+                
             });
         
             return {
