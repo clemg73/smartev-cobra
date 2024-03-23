@@ -30,7 +30,7 @@
                 let stations = [];
 
                 try{
-                    const response = await fetch("https://api.openchargemap.io/v3/poi?maxresults=1000&countrycode=FR&key="+API_KEY, {
+                    const response = await fetch("https://api.openchargemap.io/v3/poi?maxresults=5000&countrycode=FR&key="+API_KEY, {
                     method: "GET"
                     });
 
@@ -65,29 +65,28 @@
                 
                 console.log(map.value);
 
-                
-
                 L.tileLayer(url, {
                     attribution: attribution,
                     maxZoom: 18,
                 }).addTo(map.value);
         
                 const markersGroup = L.markerClusterGroup({
-                    spiderfyOnMaxZoom: false,
+                    spiderfyOnMaxZoom: true,
                     showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true
+                    zoomToBoundsOnClick: true,
+                    chunkedLoading: true
                 });
 
                 markers.forEach(markerObject => {
-                    const Latitude = markerObject.AddressInfo.Latitude;
-                    const Longitude = markerObject.AddressInfo.Longitude;
+                    let Latitude = markerObject.AddressInfo.Latitude;
+                    let Longitude = markerObject.AddressInfo.Longitude;
                     
-                    const marker = L.marker([Latitude, Longitude]);
+                    const marker = L.marker(L.latLng(Latitude, Longitude));
                     marker.bindPopup("Lat : " + Latitude +", Long : " + Longitude);
                     markersGroup.addLayer(marker);
 
-                    marker.addEventListener('click', ()=>{
-                        console.log("Lat : " + Latitude +", Long : " + Longitude);
+                    marker.addEventListener('click', (event)=>{
+                        console.log("Lat : " + event.latlng.lat + ", Long : " + event.latlng.lng);
                         context.emit("stationInfo", markerObject)
                     })
                 });
