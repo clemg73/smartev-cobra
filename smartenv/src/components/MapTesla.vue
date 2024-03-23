@@ -16,7 +16,6 @@
     export default {
         name: 'MapTesla',
         setup(props, context) {
-            const map = ref(null);
             const mapContainer = ref(null);
             const center = ref([46.821445, 2.454638])
             const zoom = ref(6)
@@ -30,7 +29,7 @@
                 let stations = [];
 
                 try{
-                    const response = await fetch("https://api.openchargemap.io/v3/poi?maxresults=5000&countrycode=FR&key="+API_KEY, {
+                    const response = await fetch("https://api.openchargemap.io/v3/poi?maxresults=20000&countrycode=FR&key="+API_KEY, {
                     method: "GET"
                     });
 
@@ -50,9 +49,9 @@
 
             async function callGetStations(){
                 try{
-                        let stations = await getStations()  
-                        markers = stations
-                        console.log(stations);
+                    let stations = await getStations()  
+                    markers = stations
+                    console.log(stations);
                 }
                 catch(err){
                     console.error("Problème pour récupérer les données : " + err)
@@ -61,14 +60,14 @@
 
             onMounted(async () => {
                 await callGetStations();
-                map.value = L.map(mapContainer.value).setView(center.value, zoom.value);
+                let map = L.map(mapContainer.value).setView(center.value, zoom.value);
                 
-                console.log(map.value);
+                console.log(map);
 
                 L.tileLayer(url, {
                     attribution: attribution,
                     maxZoom: 18,
-                }).addTo(map.value);
+                }).addTo(map);
         
                 const markersGroup = L.markerClusterGroup({
                     spiderfyOnMaxZoom: true,
@@ -91,8 +90,22 @@
                     })
                 });
         
-                map.value.addLayer(markersGroup);
+                map.addLayer(markersGroup);
 
+
+                // var latlngs = [
+                //     [[45.51, -122.68],
+                //     [37.77, -122.43],
+                //     [34.04, -118.2]],
+                //     [[40.78, -73.91],
+                //     [41.83, -87.62],
+                //     [32.76, -96.72]]
+                // ];
+
+                // var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+
+                // // zoom the map to the polyline
+                // map.fitBounds(polyline.getBounds());
                 
             });
         
