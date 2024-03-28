@@ -1,6 +1,7 @@
 # smartenv
 
-This template should help get you started developing with Vue 3 in Vite.
+Projet réalisé par Clément Gros et Kilian VIOLET.
+Reprise du contenu d'un précédent projet git que nous avons créé pour le projet. 
 
 ## Recommended IDE Setup
 
