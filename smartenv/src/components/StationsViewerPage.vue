@@ -1,9 +1,10 @@
 <template>
 
     <div style="display: flex;">
-        <Itinerary></Itinerary>
+        <Itinerary @itinerary="itineraryFunc"></Itinerary>
         <MapTesla @stationInfo="stationInfoChange"></MapTesla>
         <StationInformations :buttonData="buttonData" />
+        <p>coucou{{ itineraryData }}</p>
     </div>
     </template>
     
@@ -21,12 +22,16 @@
         },
         data() {
             return {
-                buttonData: null
+                buttonData: null,
+                itineraryData: null
             };
         },
         methods: {
             stationInfoChange(data) {
                 this.buttonData = data;
+            },
+            itineraryFunc(data){
+                this.itineraryData = data;
             }
         }
     }

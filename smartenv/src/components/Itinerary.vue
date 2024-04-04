@@ -140,6 +140,9 @@
     
                 points.push({"latitude":this.addressEnd.center[1],"longitude":this.addressEnd.center[0]})
                 console.log(points)
+
+                this.$emit('itinerary', points);
+
     
             },
             async itineraryFirst() {
